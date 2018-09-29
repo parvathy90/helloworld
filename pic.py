@@ -41,7 +41,7 @@ for imagePath in paths.list_images(args["training"]):
 	logo = gray[y:y + h, x:x + w]
 	logo = cv2.resize(logo, (200, 100))
  
-	# extract Histogram of Oriented Gradients from the logo
+	# extract Histogram of Oriented Gradients from the pic
 	H = feature.hog(logo, orientations=9, pixels_per_cell=(10, 10),
 		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L1")
  
