@@ -11,7 +11,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC 
 # construct the argument parse and parse command line arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-d", "--training", required=True, help="Path to the logos training dataset")
+ap.add_argument("-d", "--training", required=True, help="Path to the pen training dataset")
 ap.add_argument("-t", "--test", required=True, help="Path to the test dataset")
 args = vars(ap.parse_args())
 
@@ -42,7 +42,7 @@ for imagePath in paths.list_images(args["training"]):
 	logo = gray[y:y + h, x:x + w]
 	logo = cv2.resize(logo, (128, 128))
  
-	# extract Histogram of Oriented Gradients from the logo
+	# extract Histogram of Oriented Gradients from the pic of pen
 	H = feature.hog(logo, orientations=9, pixels_per_cell=(10, 10),
 		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L1")
  
