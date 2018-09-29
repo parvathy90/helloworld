@@ -1,3 +1,4 @@
+
 # import the necessary packages
 from sklearn.neighbors import KNeighborsClassifier
 from skimage import exposure
@@ -15,7 +16,7 @@ ap.add_argument("-t", "--test", required=True, help="Path to the test dataset")
 args = vars(ap.parse_args())
 
 # initialize the data matrix and labels
-print "[INFO] extracting features..."
+print ("[INFO] extracting features...")
 data = []
 labels = []
 # loop over the image paths in the training set
@@ -39,9 +40,9 @@ for imagePath in paths.list_images(args["training"]):
 	# and height
 	(x, y, w, h) = cv2.boundingRect(c)
 	logo = gray[y:y + h, x:x + w]
-	logo = cv2.resize(logo, (200, 100))
+	logo = cv2.resize(logo, (128, 128))
  
-	# extract Histogram of Oriented Gradients from the pic
+	# extract Histogram of Oriented Gradients from the logo
 	H = feature.hog(logo, orientations=9, pixels_per_cell=(10, 10),
 		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L1")
  
@@ -51,8 +52,8 @@ for imagePath in paths.list_images(args["training"]):
 # "train" the nearest neighbors classifier
 print("[INFO] training classifier...")
 #model = KNeighborsClassifier(n_neighbors=4)
-model=DecisionTreeClassifier(max_depth=18)
-#model=SVC(C=100,kernel="linear",gamma=0.0001)
+#model=DecisionTreeClassifier(max_depth=18)
+model=SVC(C=10000,kernel="linear",gamma=0.00001)
 model.fit(data, labels)
 print("[INFO] evaluating...")
 # loop over the test dataset
@@ -61,7 +62,7 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	# the canonical size
 	image = cv2.imread(imagePath)
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	logo = cv2.resize(gray, (200, 100))
+	logo = cv2.resize(gray, (128, 128))
 	hog = cv2.HOGDescriptor() 
 	# extract Histogram of Oriented Gradients from the test image and
 	# predict the type of the pen
@@ -79,7 +80,7 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 		#(0, 255, 0), 3)
 	#cv2.imshow("Test Image #{}".format(i + 1), image)
 	#cv2.waitKey(0)
-"""
+
 cap = cv2.VideoCapture(0)
 dim = 128 # For HOG
 
@@ -95,15 +96,32 @@ while True:
 
     # Convert the image into a HOG descriptor
     gray = cv2.resize(gray, (dim, dim), interpolation = cv2.INTER_AREA)
-    
-    features = hog.compute(gray)
-    features = features.T # Transpose so that the feature is in a single row
+    (H, hogImage) = feature.hog(gray, orientations=9, pixels_per_cell=(10, 10),
+		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L1", visualise=True)
+    pred = model.predict(H.reshape(1, -1))[0]
+    #features = hog.compute(gray)
+    #features = features.T # Transpose so that the feature is in a single row
+	"""
+	destination_image = cv2.absdiff(image1, image2)
+	def preprocess_image(image):
+    bilateral_filtered_image = cv2.bilateralFilter(frame, 7, 150, 150)
+    gray_image = cv2.cvtColor(bilateral_filtered_image, cv2.COLOR_BGR2GRAY)
+    return gray_image
+	image_sub = cv2.absdiff(preprocessed_image1, preprocessed_image2)
+	kernel = numpy.ones((5,5),numpy.uint8)
+	close_operated_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+	_, thresholded = cv2.threshold(close_operated_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+	_, contours, _ = cv2.findContours(median, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	cv2.drawContours(image, contours, -1, (100, 0, 255),2)
 
+	median = cv2.medianBlur(thresholded, 5)
+	_, _, angle = cv2.fitEllipse(contour)
+	"""
     # Predict the label
-    pred = model.predict(features)
+    #pred = model.predict(features)
 
     # Show the label on the screen
-    print("The label of the image is: " + str(pred))
+    print("The label of the image is: " + str(pred.title()))
 
     # Pause for 25 ms and keep going until you push q on the keyboard
     if cv2.waitKey(25) == ord('q'):
@@ -111,4 +129,3 @@ while True:
 
 cap.release() # Release the camera resource
 cv2.destroyAllWindows() # Close the image window
-"""
